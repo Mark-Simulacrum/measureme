@@ -26,7 +26,10 @@ pub fn write_file_header<S: SerializationSink>(s: &S, file_magic: &[u8; 4]) {
     });
 }
 
-pub fn read_file_header(bytes: &[u8], expected_magic: &[u8; 4]) -> Result<u32, Box<dyn Error>> {
+pub fn read_file_header(
+    bytes: &[u8],
+    expected_magic: &[u8; 4],
+) -> Result<u32, Box<dyn Error + Send + Sync>> {
     // The implementation here relies on FILE_HEADER_SIZE to have the value 8.
     // Let's make sure this assumption cannot be violated without being noticed.
     assert_eq!(FILE_HEADER_SIZE, 8);

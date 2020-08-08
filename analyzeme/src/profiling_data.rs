@@ -44,13 +44,24 @@ pub struct ProfilingData {
 }
 
 impl ProfilingData {
-    pub fn new(path_stem: &Path) -> Result<ProfilingData, Box<dyn Error>> {
+    pub fn new(path_stem: &Path) -> Result<ProfilingData, Box<dyn Error + Send + Sync>> {
         let paths = ProfilerFiles::new(path_stem);
 
         let string_data = fs::read(paths.string_data_file).expect("couldn't read string_data file");
         let index_data =
             fs::read(paths.string_index_file).expect("couldn't read string_index file");
         let event_data = fs::read(paths.events_file).expect("couldn't read events file");
+
+        ProfilingData::from_buffers(string_data, index_data, event_data)
+    }
+
+    pub fn from_buffers(
+        string_data: Vec<u8>,
+        string_index: Vec<u8>,
+        events: Vec<u8>,
+    ) -> Result<ProfilingData, Box<dyn Error + Send + Sync>> {
+        let index_data = string_index;
+        let event_data = events;
 
         let event_data_format = read_file_header(&event_data, FILE_MAGIC_EVENT_STREAM)?;
         if event_data_format != CURRENT_FILE_FORMAT_VERSION {
